@@ -1,0 +1,26 @@
+#!/bin/bash
+set -ue
+
+[ $# -eq 0 -o "$1" = "-h" -o "$1" = "--help" ] && echo "Usage: $0 [output_format] [input_file ...]" && exit 1
+
+format="$1"
+options=""
+shift
+
+if [ -z "$options" ] ; then
+    for f in h264 hevc ; do
+        [ "$format" = "$f" ] && options="-an" && break
+    done
+    for f in mp3 wav flac alac aac m4a ac3 ; do
+        [ "$format" = "$f" ] && options="-vn" && break
+    done
+    for f in mp4 webm mkv flv ts mov ; do
+        [ "$format" = "$f" ] && options="-c copy" && break
+    done
+    [ -z "$options" ] && echo "Unknown format, please specify options manually." && exit 1
+fi
+
+for i in "$@" ; do (
+    set -x
+    ffmpeg -i "$i" $options "${i%.*}.$format"
+) done
